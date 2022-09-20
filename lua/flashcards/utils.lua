@@ -36,7 +36,7 @@ M.dir_exists = function (dir)
 end
 
 M.create_dir = function (dir)
-    if dir_exists(dir) then return end
+    if M.dir_exists(dir) then return end
     local code = os.execute('mkdir ' .. dir)
 end
 
@@ -55,7 +55,7 @@ M.center = function (str)
     for i = 1, shift do
         t[i] = string.rep(' ', width)
     end
-    t[shift] = centered_line
+    t[shift + 1] = centered_line
     return t
 end
 

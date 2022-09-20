@@ -14,6 +14,12 @@ local flashcard = require('flashcards.flashcard')
 
 local M = {}
 
+local buffers = {
+    current = 0,
+    flashcard = -1,
+    subjects = -1
+}
+
 local home = os.getenv('HOME')
 
 local defaults = {
@@ -22,9 +28,10 @@ local defaults = {
         j = 'next_option()',
         k = 'prev_option()',
         q = 'close_window()',
-        n = 'next_flashcard()',
-        f = 'flip_flashcard()',
-        ['<cr>'] = 'select_option()'
+        n = 'next_selection()',
+        b = 'prev_selection()',
+        f = 'flip_card()',
+        ['<cr>'] = 'select()'
     }
 }
 
@@ -38,6 +45,7 @@ M.setup = function(opts)
     end
     setup_complete = true
     M.options = vim.tbl_deep_extend('force', {}, defaults, opts or {})
+    utils.create_dir(M.options.flashcards_dir)
 end
 
 
@@ -99,24 +107,6 @@ M.current = {
     showing_term = true
 }
 
-M.flip_card = function ()
-    if M.current.showing_term then
-        M.current.showing_term = false
-        api.nvim_buf_set_lines(0, 1, -1, false, utils.center(M.current.subject[M.current.card].def))
-    else
-        M.current.showing_term = true
-        update()
-    end
-end
-
-M.next_card = function ()
-    M.current.card = M.current.card + 1
-    if M.current.card > M.current.num_cards then
-        M.current.card = 1
-    end
-    update()
-end
-
 M.choose_subject = function ()
     select.open({
         'Select option 1',
@@ -125,41 +115,47 @@ M.choose_subject = function ()
     })
 end
 
-M.open_flashcards = function ()
-    local flashcard_buf = flashcard.open(M.current.subject.cards)
+M.flip_card = function ()
+    flashcard.flip()
 end
 
--- M.select_option = function ()
---     local current_line = api.nvim_win_get_cursor(0)[1]
---     print(current_line)
--- end
+M.next_selection = function ()
+    if buffers.current == buffers.flashcard then
+        flashcard.next()
+    elseif buffers.current == buffers.subject then
+        print('SELECTING IN SUBJECTS')
+    end
+end
 
--- M.next_option = function ()
---     M.current.option = M.current.option + 1
---     if M.current.option > M.current.num_options then
---         M.current.option = 1
---     end
---     update_options()
--- end
+M.prev_selection = function ()
+    if buffers.current == buffers.flashcard then
+        flashcard.prev()
+    elseif buffers.current == buffers.subject then
+        print('SELECTING IN SUBJECTS')
+    end
+end
 
--- M.prev_option = function ()
---     M.current.option = M.current.option - 1
---     if M.current.option < 1 then
---         M.current.option = M.current.num_options
---     end
---     update_options()
--- end
+M.select = function ()
+    if buffers.current == buffers.flashcard then
+        flashcard.flip()
+    elseif buffers.current == buffers.subject then
+        print('SELECTING IN SUBJECTS')
+    end
+end
 
--- M.close_window = function ()
---     api.nvim_win_close(0, true)
--- end
+M.close_window = function ()
+    if buffers.current == buffers.flashcard then
+        api.nvim_win_close(0, true)
+    end
+end
 
 M.run = function ()
     if not setup_complete then
         M.setup({})
-        utils.create_dir(M.options.flashcards_dir)
     end
     local subjects = read_flashcard_subjects()
+    buffers.flashcard = flashcard.open(subjects[1], M.options)
+    buffers.current = buffers.flashcard
 end
 
 return M
