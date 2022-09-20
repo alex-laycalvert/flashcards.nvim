@@ -154,6 +154,7 @@ M.run = function ()
         M.setup({})
     end
     local subjects = read_flashcard_subjects()
+    buffers.subjects = select.open(subjects)
     buffers.flashcard = flashcard.open(subjects[1], M.options)
     buffers.current = buffers.flashcard
 end
