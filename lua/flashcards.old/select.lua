@@ -3,20 +3,18 @@ local utils = require('flashcards.utils')
 
 local M = {}
 
-local current_selection = 0
-
 M.items = {}
 M.num_items = 0
 M.spacing = 2
+M.current_selection = 0
 
-M.open = function (items, options, default)
+M.open = function (items, options)
     M.items = utils.map(items, function (item)
         return {
             item = item,
             line = 0
         }
     end)
-    current_selection = default
 
     local count = 0
     for _ in pairs(items) do count = count + 1 end
@@ -52,42 +50,39 @@ M.open = function (items, options, default)
     api.nvim_win_set_option(win, 'cursorline', true)
 
     utils.set_mappings(buf, options.mappings)
-    current_selection = 1
+    M.current_selection = 1
     M.update_view()
     return win
 end
 
 M.choose = function (callback)
-    callback(current_selection)
+    callback(M.current_selection)
 end
 
 M.next = function ()
-    current_selection = current_selection + 1
-    if current_selection > M.num_items then
-        current_selection = 1
+    M.current_selection = M.current_selection + 1
+    if M.current_selection > M.num_items then
+        M.current_selection = 1
     end
     M.update_view()
 end
 
 M.prev = function ()
-    current_selection = current_selection - 1
-    if current_selection < 1 then
-        current_selection = M.num_items
+    M.current_selection = M.current_selection - 1
+    if M.current_selection < 1 then
+        M.current_selection = M.num_items
     end
     M.update_view()
 end
 
 M.update_view = function ()
     api.nvim_buf_set_option(0, 'modifiable', true)
-    -- api.nvim_buf_set_lines(0, 0, 1, false, {
-    --     utils.center_line('Subjects')
-    -- })
     api.nvim_buf_set_lines(0, 0, -1, false, utils.space_lines(
         utils.map(M.items, function (item) return item.item.name end),
         M.num_items,
         M.spacing
     ))
-    api.nvim_win_set_cursor(0, { M.items[current_selection].line, 0 })
+    api.nvim_win_set_cursor(0, { M.items[M.current_selection].line, 0 })
     api.nvim_buf_set_option(0, 'modifiable', false)
 end
 

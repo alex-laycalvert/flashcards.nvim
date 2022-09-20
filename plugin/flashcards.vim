@@ -3,4 +3,4 @@ if exists("g:loaded_flashcards_plugin")
 endif
 let g:loaded_flashcards_plugin = 1
 
-command! -nargs=0 Flashcards lua require('flashcards').run()
+command! -nargs=0 Flashcards lua require('flashcards').browse_subjects()

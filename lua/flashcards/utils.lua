@@ -1,33 +1,11 @@
-local api = vim.api
 local json = require('flashcards.json')
 
 local M = {}
 
-M.map = function (tbl, f)
-    local t = {}
-    for k, v in pairs(tbl) do
-        t[k] = f(v)
-    end
-    return t
-end
-
-M.set_mappings = function (buf, mappings)
-    for k, v in pairs(mappings) do
-        api.nvim_buf_set_keymap(buf, 'n', k, ':lua require("flashcards").' .. v .. '<CR>', {
-            nowait = true, noremap = true, silent = true
-        })
-    end
-end
-
-M.scandir = function (dir)
-    local i, t, popen = 0, {}, io.popen
-    local pfile = popen('ls -a "' .. dir .. '"')
-    for filename in pfile:lines() do
-        i = i + 1
-        t[i] = filename
-    end
-    pfile:close()
-    return t
+M.length = function (tbl)
+    local count = 0
+    for _ in pairs(tbl) do count = count + 1 end
+    return count
 end
 
 M.dir_exists = function (dir)
@@ -41,67 +19,19 @@ M.create_dir = function (dir)
     local code = os.execute('mkdir ' .. dir)
 end
 
-M.read_flashcard_subject = function (dir, filename)
-    local flashcard_subject = {
-        name = '',
-        cards = {},
-        num_cards = 0
-    }
-    local file = io.open(dir .. '/' .. filename, 'r')
-    local file_json_str = ''
-    io.input(file)
-    local line = io.read()
-    while line ~= nil do
-        file_json_str = file_json_str .. line
-        line = io.read()
-    end
-    local file_json = json.decode(file_json_str)
-    flashcard_subject.name = filename:match('^(.*).json')
-    local count = 0
-    for key, flashcard in pairs(file_json) do
-        count = count + 1
-        flashcard_subject.cards[key] = {
-            term = flashcard.term,
-            def = flashcard.def
-        }
-    end
-    flashcard_subject.num_cards = count
-    return flashcard_subject
-end
-
-M.read_flashcard_subjects = function (dir)
-    local flashcard_subjects = {}
-    local i = 1
-    local files = M.scandir(dir)
-    for num,file in pairs(files) do
-        if file == '.' or file == '..' then
-            goto continue__read_flashcards
-        end
-        local flashcard_subject = M.read_flashcard_subject(dir, file)
-        flashcard_subjects[i] = flashcard_subject
-        i = i + 1
-        ::continue__read_flashcards::
-    end
-    return flashcard_subjects
+M.create_subjects_file = function (dir)
+    local filename = dir .. '/' .. 'SUBJECTS.json'
+    local code = os.execute('touch ' .. filename)
+    local file = io.open(filename, 'w')
+    io.output(file)
+    io.write('[]')
+    file:close()
 end
 
 M.center_line = function (str)
     local width = api.nvim_win_get_width(0)
     local shift = math.floor(width / 2) - math.floor(string.len(str) / 2)
     return string.rep(' ', shift) .. str
-end
-
-M.center = function (str)
-    local t = {}
-    local centered_line = M.center_line(str)
-    local width = api.nvim_win_get_width(0)
-    local height = api.nvim_win_get_height(0)
-    local shift = math.floor(height / 2) - 1
-    for i = 1, shift do
-        t[i] = string.rep(' ', width)
-    end
-    t[shift + 1] = centered_line
-    return t
 end
 
 M.space_lines = function (lines, num_lines, spacing)
@@ -116,6 +46,46 @@ M.space_lines = function (lines, num_lines, spacing)
         end
     end
     return t
+end
+
+M.set_mappings = function (buf, module, mappings)
+    for k, mapping in pairs(mappings) do
+        api.nvim_buf_set_keymap(
+            buf,
+            'n',
+            k,
+            ':lua require("flashcards.' .. module .. '").' .. mapping .. '<CR>', {
+            nowait = true, noremap = true, silent = true
+        })
+    end
+end
+
+M.get_subjects = function (dir)
+    local subjects = {}
+
+    local file = io.open(dir .. '/SUBJECTS.json', 'r')
+    if file == nil then
+        -- TODO Error handling
+        return {}
+    end
+    local file_json = ''
+    io.input(file)
+    local line = io.read()
+    while line ~= nil do
+        file_json = file_json .. line
+        line = io.read()
+    end
+    file:close()
+    local subjects_json = json.decode(file_json)
+    for k, subject in pairs(subjects_json) do
+        subjects[k] = subject
+    end
+    return subjects
+end
+
+M.get_subject = function (subject, dir)
+    local subject = {}
+    return subject
 end
 
 return M

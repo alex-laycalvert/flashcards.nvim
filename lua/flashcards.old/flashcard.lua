@@ -61,10 +61,14 @@ end
 
 M.update_card = function ()
     api.nvim_buf_set_option(0, 'modifiable', true)
-    if showing_term then
-        current_text = M.subject.cards[M.current_card].term
+    if M.subject.num_cards <= 0 then
+        current_text = 'No cards to show'
     else
-        current_text = M.subject.cards[M.current_card].def
+        if showing_term then
+            current_text = M.subject.cards[M.current_card].term
+        else
+            current_text = M.subject.cards[M.current_card].def
+        end
     end
     api.nvim_buf_set_lines(0, 0, -1, false, utils.center(current_text))
     api.nvim_buf_set_lines(0, 0, 1, false, { utils.center_line(M.subject.name) })
