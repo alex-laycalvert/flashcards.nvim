@@ -46,18 +46,15 @@ require('flashcards').setup({
 ## Flashcards
 
 To start going through your flashcards, enter the command `:Flashcards`.
-This will open a new window with the first flash card term.
+This will browse all available subjects in your `flashcards_dir` which
+are stored as `json` files.
 
-To flip a flashcard, hit `f` or enter the command `:FlipFlashcard`.
-To go to the next flash card, hit `n` or enter the command `:NextFlashcard`.
-To quit, hit `q`.
+To go through your flashcards, see `mappings` below.
 
-Flashcards are stored as `json` in your `flashcards_dir`.
-
-Currently, to make flashcards you need to create a single `json`
-file in your `flashcards_dir`. The file should be a `json` array
-of objects with the properties `term` and `def` for term and definition
-respectively.
+Currently, to make flashcards you need to create a `json`
+file in your `flashcards_dir` with the name of your subject.
+The file should be a `json` array of objects with the properties
+`term` and `def` for term and definition  respectively.
 
 Example:
 
@@ -75,6 +72,13 @@ Example:
 ]
 ```
 
+## Mappings
+
+- `f`: Flip the current flashcard (`select()`)
+- `n`: Next flashcard (`next_selection()`)
+- `b`: Previous selection (`prev_selection()`)
+- `o`: Browse through your subjects (`browse_subjects()`)
+
 ## API
 
 `flashcards.nvim` implements several functions that can be accessed and mapped.
@@ -82,10 +86,12 @@ Example:
 You can set `require('flashcards')` to a variable or use `lua require('flashcards').<FUNCTION>`
 to call each function.
 
-- `run()`: Entrypoint for the plugin, mapped to the command `:Flashcards`
+- `run()`: Entrypoint for the plugin, mapped to the command `:Flashcards`.
 - `next_selection()`: If flashcards are open, this goes to the next flashcard. If a selection window is open, this goes to the next selection.
 - `prev_selection()`: If flashcards are open, this goes to the previous flashcard. If a selection window is open, this goes to the previous selection.
 - `flip_card()`: This flips the current flashcard.
 - `select()`: If flashcards are open, this is the same as `flip_card()`. If a select window is open, this selections the current option.
-- `choose_subject()`: ***TODO*** This opens a select window and allows you to 
-- `close_window()`: Closes the current buffer for the plugin
+- `choose_subject()`: ***TODO*** This opens a select window and allows you to.
+- `close_window()`: Closes the current buffer for the plugin.
+- `open_subject(index)`: Opens flashcards for the given index of the `subjects` array.
+- `browse_subjects()`: Opens the select window to browse available subjects.
