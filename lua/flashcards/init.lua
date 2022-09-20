@@ -79,7 +79,7 @@ local function read_flashcard_groups ()
         if file == '.' or file == '..' then
             goto continue__read_flashcards
         end
-        local flashcard_group = read_flashcard_group(file)
+        local flashcard_group = read_flashcard_group(M.options.flashcards_dir .. '/' .. file)
         flashcard_groups[i] = flashcard_group
         ::continue__read_flashcards::
     end
@@ -105,13 +105,48 @@ local function center (str)
     return t
 end
 
+local function update ()
+    if M.current.card > M.current.num_cards then return end
+    M.current.showing_term = true
+    api.nvim_buf_set_lines(0, 1, -1, false, center(M.current.group[M.current.card].term))
+end
+
+M.current = {
+    group = {},
+    card = 1,
+    num_cards = 0,
+    showing_term = true
+}
+
+M.flip_card = function ()
+    if M.current.showing_term then
+        M.current.showing_term = false
+        api.nvim_buf_set_lines(0, 1, -1, false, center(M.current.group[M.current.card].def))
+    else
+        M.current.showing_term = true
+        update()
+    end
+end
+
+M.next_card = function ()
+    M.current.card = M.current.card + 1
+    if M.current.card > M.current.num_cards then
+        M.current.card = 1
+    end
+    update()
+end
+
 M.run = function ()
     if not setup_complete then
         M.setup({})
     end
     create_flashcards_dir()
     local groups = read_flashcard_groups()
-    local card = groups[1][1]
+    M.current.group = groups[1]
+    local count = 0
+    for _ in pairs(M.current.group) do count = count + 1 end
+    M.current.num_cards = count
+    M.current.card = 1
 
     local gwidth = api.nvim_list_uis()[1].width
     local gheight = api.nvim_list_uis()[1].height
@@ -130,11 +165,11 @@ M.run = function ()
     local buf = api.nvim_create_buf(false, true)
     api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
     local win = api.nvim_open_win(buf, true, win_opts)
+    api.nvim_buf_set_keymap(buf, 'n', 'q', ':q<CR>', { nowait = true, noremap = true, silent = true })
+    api.nvim_buf_set_keymap(buf, 'n', 'f', ':FlipFlashcard<CR>', { nowait = true, noremap = true, silent = true })
+    api.nvim_buf_set_keymap(buf, 'n', 'n', ':NextFlashcard<CR>', { nowait = true, noremap = true, silent = true })
 
-    api.nvim_buf_set_lines(buf, 1, -1, false, center(card.term))
-
-    for key, card in groups[1] do
-    end
+    update()
 end
 
 return M
