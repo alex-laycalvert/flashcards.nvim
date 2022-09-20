@@ -1,4 +1,5 @@
 local subjects = require('flashcards.subjects')
+local flashcards = require('flashcards.flashcards')
 local utils = require('flashcards.utils')
 local home = os.getenv('HOME')
 
@@ -10,28 +11,28 @@ local defaults = {
     flashcards = {
         dir = home .. '/.config/flashcards',
         mappings = {
-            l = 'next_card()',
-            h = 'prev_card()',
-            n = 'next_card()',
-            b = 'prev_card()',
-            f = 'flip_card()',
-            q = 'close_cards()',
-            a = 'new_card()',
-            e = 'edit_card()',
+            l = 'next()',
+            h = 'prev()',
+            n = 'next()',
+            b = 'prev()',
+            f = 'flip()',
+            q = 'close()',
+            a = 'new()',
+            e = 'edit()',
             g = 'browse_cards()',
             o = 'browse_subjects()',
-            ['<CR>'] = 'flip_card()',
+            ['<CR>'] = 'flip()',
         }
     },
     subjects = {
         spacing = 2,
         mappings = {
-            j = 'next_subject()',
-            k = 'prev_subject()',
-            q = 'close_subjects()',
-            e = 'edit_subjects()',
-            a = 'add_subjects()',
-            ['<CR>'] = 'select_subject()',
+            j = 'next()',
+            k = 'prev()',
+            q = 'close()',
+            e = 'edit()',
+            a = 'add()',
+            ['<CR>'] = 'select()',
         },
     }
 }
@@ -44,9 +45,13 @@ M.setup = function (opts)
     setup_complete = true
 end
 
+M.open_flashcards = function (subject)
+    flashcards.open(M.options.flashcards.dir, subject, M.options.flashcards)
+end
+
 M.browse_subjects = function ()
     if not setup_complete then return end
-    subjects.open(M.options.flashcards.dir, M.options.subjects)
+    subjects.open(M.options.flashcards.dir, M.options.subjects, M.open_flashcards)
 end
 
 return M

@@ -34,7 +34,6 @@ M.open = function (items, options)
         col = (gwidth - width) * 0.5
     }
 
-    local curr_line = 0
     local current_index = 1
     for i = 1, M.num_items * M.spacing + M.spacing do
         if i % M.spacing == 0 and current_index <= M.num_items then
