@@ -5,6 +5,7 @@ getmetatable('').__index = function (str, i)
     else return strdefi[i]
     end
 end
+local api = vim.api
 
 local json = require('flashcards.json')
 
@@ -85,24 +86,55 @@ local function read_flashcard_groups ()
     return flashcard_groups
 end
 
+local function center_line (str)
+    local width = api.nvim_win_get_width(0)
+    local shift = math.floor(width / 2) - math.floor(string.len(str) / 2)
+    return string.rep(' ', shift) .. str
+end
+
+local function center (str)
+    local t = {}
+    local centered_line = center_line(str)
+    local width = api.nvim_win_get_width(0)
+    local height = api.nvim_win_get_height(0)
+    local shift = math.floor(height / 2) - 1
+    for i = 1,shift do
+        t[i] = string.rep(' ', width)
+    end
+    t[shift] = centered_line
+    return t
+end
+
 M.run = function ()
     if not setup_complete then
         M.setup({})
     end
     create_flashcards_dir()
     local groups = read_flashcard_groups()
+    local card = groups[1][1]
+
+    local gwidth = api.nvim_list_uis()[1].width
+    local gheight = api.nvim_list_uis()[1].height
+    local height = 15
+    local width = 75
 
     local win_opts = {
         relative = 'editor',
-        width = 100,
-        height = 100,
-        row = 0,
-        col = 0,
         style = 'minimal',
         border = 'single',
+        height = height,
+        width = width,
+        row = (gheight - height) * 0.5,
+        col = (gwidth - width) * 0.5
     }
-    local buf = vim.api.nvim_create_buf(false, true)
-    local win = vim.api.nvim_open_win(buf, true, win_opts)
+    local buf = api.nvim_create_buf(false, true)
+    api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+    local win = api.nvim_open_win(buf, true, win_opts)
+
+    api.nvim_buf_set_lines(buf, 1, -1, false, center(card.term))
+
+    for key, card in groups[1] do
+    end
 end
 
 return M
