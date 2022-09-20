@@ -78,6 +78,7 @@ Example:
 - `n`: Next flashcard (`next_selection()`)
 - `b`: Previous selection (`prev_selection()`)
 - `o`: Browse through your subjects (`browse_subjects()`)
+- `q`: Quit (`close_window()`)
 
 ## API
 

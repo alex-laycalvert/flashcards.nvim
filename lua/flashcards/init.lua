@@ -100,9 +100,11 @@ end
 M.open_subject = function (index)
     if (windows.subjects > 0) then
         api.nvim_win_close(windows.subjects, true)
+        windows.subjects = -1
     end
     if (windows.flashcard > 0) then
         api.nvim_win_close(windows.flashcard, true)
+        windows.flashcard = -1
     end
     windows.flashcard = flashcard.open(subjects[index], M.options)
     windows.current = windows.flashcard
