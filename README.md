@@ -42,6 +42,13 @@ require('flashcards').setup({
 
 ## Flashcards
 
+To start going through your flashcards, enter the command `:Flashcards`.
+This will open a new window with the first flash card term.
+
+To flip a flashcard, hit `f` or enter the command `:FlipFlashcard`.
+To go to the next flash card, hit `n` or enter the command `:NextFlashcard`.
+To quit, hit `q`.
+
 Flashcards are stored as `json` in your `flashcards_dir`.
 
 Currently, to make flashcards you need to create a single `json`
