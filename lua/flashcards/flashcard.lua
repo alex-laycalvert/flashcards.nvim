@@ -33,7 +33,7 @@ M.open = function (subject, options)
     local win = api.nvim_open_win(buf, true, win_opts)
     utils.set_mappings(buf, options.mappings)
     M.update_card()
-    return buf
+    return win
 end
 
 M.flip = function ()
@@ -43,7 +43,7 @@ end
 
 M.next = function ()
     M.current_card = M.current_card + 1
-    if M.current_card > M.num_cards then
+    if M.current_card > M.subject.num_cards then
         M.current_card = 1
     end
     showing_term = true
@@ -53,7 +53,7 @@ end
 M.prev = function ()
     M.current_card = M.current_card - 1
     if M.current_card < 1 then
-        M.current_card = M.num_cards
+        M.current_card = M.subject.num_cards
     end
     showing_term = true
     M.update_card()

@@ -13,7 +13,10 @@ local flashcard = require('flashcards.flashcard')
 
 local setup_complete = false
 
-local buffers = {
+local subjects = {}
+local current_subject = 1
+
+local windows = {
     current = 0,
     flashcard = -1,
     subjects = -1
@@ -24,10 +27,13 @@ local defaults = {
     mappings = {
         j = 'next_selection()',
         k = 'prev_selection()',
+        l = 'next_selection()',
+        h = 'prev_selection()',
         q = 'close_window()',
         n = 'next_selection()',
         b = 'prev_selection()',
         f = 'flip_card()',
+        o = 'browse_subjects()',
         ['<cr>'] = 'select()'
     }
 }
@@ -58,46 +64,61 @@ M.flip_card = function ()
 end
 
 M.next_selection = function ()
-    if buffers.current == buffers.flashcard then
+    if windows.current == windows.flashcard then
         flashcard.next()
-    elseif buffers.current == buffers.subjects then
+    elseif windows.current == windows.subjects then
         select.next()
     end
 end
 
 M.prev_selection = function ()
-    if buffers.current == buffers.flashcard then
+    if windows.current == windows.flashcard then
         flashcard.prev()
-    elseif buffers.current == buffers.subjects then
+    elseif windows.current == windows.subjects then
         select.prev()
     end
 end
 
 M.select = function ()
-    if buffers.current == buffers.flashcard then
+    if windows.current == windows.flashcard then
         flashcard.flip()
-    elseif buffers.current == buffers.subjects then
-        select.choose()
+    elseif windows.current == windows.subjects then
+        select.choose(M.open_subject)
     end
 end
 
 M.close_window = function ()
-    if buffers.current == buffers.flashcard then
-    elseif buffers.current == buffers.subjects then
-        buffers.current = buffers.flashcard
+    if windows.current == windows.flashcard then
+        windows.flashcard = -1
+    elseif windows.current == windows.subjects then
+        windows.current = windows.flashcard
+        windows.subjects = -1
     end
     api.nvim_win_close(0, true)
+end
+
+M.open_subject = function (index)
+    api.nvim_win_close(windows.subjects, true)
+    windows.flashcard = flashcard.open(subjects[index], M.options)
+    windows.current = windows.flashcard
+    current_subject = index
+end
+
+M.browse_subjects = function ()
+    if (windows.flashcard > 0) then
+        api.nvim_win_close(windows.flashcard, true)
+        windows.flashcard = -1
+    end
+    windows.subjects = select.open(subjects, M.options, current_selection)
+    windows.current = windows.subjects
 end
 
 M.run = function ()
     if not setup_complete then
         M.setup({})
     end
-    local subjects = utils.read_flashcard_subjects(M.options.flashcards_dir)
-    buffers.subjects = select.open(subjects, M.options)
-    buffers.current = buffers.subjects
-    -- buffers.flashcard = flashcard.open(subjects[1], M.options)
-    -- buffers.current = buffers.flashcard
+    subjects = utils.read_flashcard_subjects(M.options.flashcards_dir)
+    M.browse_subjects()
 end
 
 return M

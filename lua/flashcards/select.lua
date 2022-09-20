@@ -3,18 +3,20 @@ local utils = require('flashcards.utils')
 
 local M = {}
 
-local current_selection = 1
+local current_selection = 0
 
 M.items = {}
 M.num_items = 0
+M.spacing = 2
 
-M.open = function (items, options)
+M.open = function (items, options, default)
     M.items = utils.map(items, function (item)
         return {
             item = item,
             line = 0
         }
     end)
+    current_selection = default
 
     local count = 0
     for _ in pairs(items) do count = count + 1 end
@@ -22,7 +24,7 @@ M.open = function (items, options)
 
     local gwidth = api.nvim_list_uis()[1].width
     local gheight = api.nvim_list_uis()[1].height
-    local height = M.num_items * 2 + 1
+    local height = M.num_items * M.spacing + M.spacing - 1
     local width = 40
     local win_opts = {
         relative = 'editor',
@@ -34,6 +36,15 @@ M.open = function (items, options)
         col = (gwidth - width) * 0.5
     }
 
+    local curr_line = 0
+    local current_index = 1
+    for i = 1, M.num_items * M.spacing + M.spacing do
+        if i % M.spacing == 0 and current_index <= M.num_items then
+            M.items[current_index].line = i
+            current_index = current_index + 1
+        end
+    end
+
     local buf = api.nvim_create_buf(false, true)
     api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
 
@@ -43,11 +54,11 @@ M.open = function (items, options)
     utils.set_mappings(buf, options.mappings)
     current_selection = 1
     M.update_view()
-    return buf
+    return win
 end
 
-M.choose = function ()
-    print('SELECTION:', current_selection)
+M.choose = function (callback)
+    callback(current_selection)
 end
 
 M.next = function ()
@@ -74,8 +85,9 @@ M.update_view = function ()
     api.nvim_buf_set_lines(0, 0, -1, false, utils.space_lines(
         utils.map(M.items, function (item) return item.item.name end),
         M.num_items,
-        2
+        M.spacing
     ))
+    api.nvim_win_set_cursor(0, { M.items[current_selection].line, 0 })
     api.nvim_buf_set_option(0, 'modifiable', false)
 end
 
