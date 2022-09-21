@@ -1,4 +1,6 @@
+local config = require('flashcards.config')
 local utils = require('flashcards.utils')
+local add_subject = require('flashcards.add_subject')
 local api = vim.api
 
 local M = {
@@ -18,7 +20,8 @@ end
 local function open_window ()
     local gwidth = api.nvim_list_uis()[1].width
     local gheight = api.nvim_list_uis()[1].height
-    local height = M.num_subjects * M.options.spacing + M.options.spacing - 1
+    local height =
+        M.num_subjects * config.opts.subjects.spacing + config.opts.subjects.spacing - 1
     local width = 40
     local win_opts = {
         relative = 'editor',
@@ -32,7 +35,7 @@ local function open_window ()
     open_buffer()
     win = api.nvim_open_win(buf, true, win_opts)
     api.nvim_win_set_option(win, 'cursorline', true)
-    utils.set_mappings(buf, 'subjects', M.options.mappings)
+    utils.set_mappings(buf, 'subjects', config.opts.subjects.mappings)
 end
 
 local function update_view ()
@@ -44,34 +47,43 @@ local function update_view ()
             function (subject) return subject.name end
         ),
         M.num_subjects,
-        M.options.spacing
+        config.opts.subjects.spacing
     ))
     api.nvim_win_set_cursor(0, { M.subjects[M.current_selection].line, 0 })
     api.nvim_buf_set_option(0, 'modifiable', false)
 end
 
-M.open = function (dir, options, open_flashcards)
-    M.dir = dir
-    M.options = options
-    M.open_flashcards = open_flashcards
+local function update_subjects ()
     M.subjects = utils.map(
-        utils.get_subjects(M.dir),
+        utils.get_subjects(config.opts.dir),
         function (subject)
             return {
-                name = subject,
+                name = subject.name,
+                file = subject.file,
                 line = -1
             }
         end
     )
     M.num_subjects = utils.length(M.subjects)
     local current_index = 1
-    for i = 1, M.num_subjects * M.options.spacing + M.options.spacing do
-        if i % M.options.spacing == 0 and current_index <= M.num_subjects then
+    for i = 1, M.num_subjects * config.opts.subjects.spacing + config.opts.subjects.spacing do
+        if i % config.opts.subjects.spacing == 0 and current_index <= M.num_subjects then
             M.subjects[current_index].line = i
             current_index = current_index + 1
         end
     end
     M.current_selection = 1
+end
+
+M.open = function (open_flashcards)
+    M.open_flashcards = open_flashcards
+    update_subjects()
+    update_view()
+end
+
+M.reopen = function ()
+    M.close()
+    update_subjects()
     update_view()
 end
 
@@ -93,7 +105,14 @@ end
 
 M.select = function ()
     M.close()
-    M.open_flashcards(M.subjects[M.current_selection].name)
+    M.open_flashcards(M.subjects[M.current_selection])
+end
+
+M.add = function ()
+    add_subject.open(function (name)
+        utils.create_subject(name, config.opts.dir)
+        M.reopen()
+    end)
 end
 
 M.close = function ()

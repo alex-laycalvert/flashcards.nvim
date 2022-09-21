@@ -3,6 +3,19 @@ local api = vim.api
 
 local M = {}
 
+-- https://github.com/james2doyle/lit-slugify
+M.slugify = function (string, replacement)
+  if replacement == nil then
+    replacement = '-'
+  end
+  local result = ''
+  for word in string.gmatch(string, "(%w+)") do
+    result = result .. word .. replacement
+  end
+  result = string.gsub(result, replacement .. "$", '')
+  return result:lower()
+end
+
 M.length = function (tbl)
     local count = 0
     for _ in pairs(tbl) do count = count + 1 end
@@ -54,6 +67,14 @@ M.center = function (str)
         t[i] = string.rep(' ', width)
     end
     t[shift + 1] = centered_line
+    return t
+end
+
+M.empty = function (height, width)
+    local t = {}
+    for i = 1, height do
+        t[i] = string.rep(' ', width)
+    end
     return t
 end
 
@@ -115,18 +136,21 @@ M.get_subjects = function (dir)
     file:close()
     local subjects_json = json.decode(file_json)
     for k, subject in pairs(subjects_json) do
-        subjects[k] = subject
+        subjects[k] = {
+            name = subject.name,
+            file = subject.file
+        }
     end
     return subjects
 end
 
-M.get_subject = function (subject_name, dir)
+M.get_subject = function (subject_info)
     local subject = {
-        name = subject_name,
+        name = subject_info.name,
         cards = {},
         num_cards = 0
     }
-    local filename = dir .. '/' .. subject_name .. '.json'
+    local filename = subject_info.file
     local file = io.open(filename, 'r')
     local file_json = ''
     io.input(file)
@@ -144,6 +168,60 @@ M.get_subject = function (subject_name, dir)
     end
     subject.num_cards = count
     return subject
+end
+
+M.get_cards = function (filename)
+    local cards = {}
+    local file = io.open(filename, 'r')
+    local file_json = ''
+    io.input(file)
+    local line = io.read()
+    while line ~= nil do
+        file_json = file_json .. line
+        line = io.read()
+    end
+    file:close()
+    local subject_json = json.decode(file_json)
+    for k, card in pairs(subject_json) do
+        cards[k] = card
+    end
+    return cards
+end
+
+M.create_subject = function (subject_name, dir)
+    local filename = dir .. '/' .. M.slugify(subject_name, '_') .. '.json'
+    if not M.file_exists(filename) then
+        local code = os.execute('touch ' .. filename)
+        local file = io.open(filename, 'w')
+        io.output(file)
+        io.write('[]')
+        file:close()
+    end
+    local subjects = M.get_subjects(dir)
+    table.insert(subjects, {
+        name = subject_name,
+        file = filename
+    })
+    local subjects_file = io.open(dir .. '/SUBJECTS.json', 'w')
+    io.output(subjects_file)
+    io.write(json.encode(subjects))
+    subjects_file:close()
+end
+
+M.create_card = function (card, filename)
+    if not M.file_exists(filename) then
+        local code = os.execute('touch ' .. filename)
+        local file = io.open(filename, 'w')
+        io.output(file)
+        io.write('[]')
+        file:close()
+    end
+    local cards = M.get_cards(filename)
+    table.insert(cards, card)
+    local file = io.open(filename, 'w')
+    io.output(file)
+    io.write(json.encode(cards))
+    file:close()
 end
 
 return M

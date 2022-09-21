@@ -4,19 +4,15 @@ A Neovim plugin for Flashcards written in Lua
 
 *** WORK IN PROGRESS ***
 
-A very basic implementation of the plugin is working but it
-is nowhere near finished.
+There are a few features that have not been implemented.
 
 ## TODO
 
-- [ ] Enable creating/deleting flashcards from Neovim
-- [ ] Enable creating/deleting subjects from Neovim
-- [ ] Refactor functions in code to multiple files
-- [ ] Add help menu
-- [ ] Implement customizeable keymappings
-- [ ] Format `term` and `def` text on buffer to look better
-- [ ] Enable editing flashcard `term` and `def` while a flashcard is open
-- [ ] Enable editing a flashcard subject name
+- [ ] Delete subject from browse menu
+- [ ] Delete card from flashcards w/ config
+- [ ] Edit subject name from browse menu
+- [ ] Edit flashcard term and def while viewing cards
+- [ ] Browse all cards in subject
 
 ## Installing
 
@@ -38,61 +34,16 @@ require('flashcards').setup({
 
 ## Configuration
 
-***TODO***
-
-- `flashcards_dir`: The directory where your flashcards are stored
-    - default: `$HOME/.config/flashcards`
+- `dir`: Directory where flashcards are stored (default: `$HOME/.config/flashcards`)
 
 ## Flashcards
 
-To start going through your flashcards, enter the command `:Flashcards`.
-This will browse all available subjects in your `flashcards_dir` which
-are stored as `json` files.
+To choose from the `subjects` menu, use the normal `j` and `k` keys to go
+down and up, then `enter` to select a subject. To add a new subject from
+the menu, press `a` then type the subject name and `enter`.
 
-To go through your flashcards, see `mappings` below.
-
-Currently, to make flashcards you need to create a `json`
-file in your `flashcards_dir` with the name of your subject.
-The file should be a `json` array of objects with the properties
-`term` and `def` for term and definition  respectively.
-
-Example:
-
-```json
-[
-    {
-        "term": "This is a term",
-        "def": "This is a definition"
-    },
-    {
-        "term": "This is another term",
-        "def": "This is another definition"
-    },
-    ...
-]
-```
-
-## Mappings
-
-- `f`: Flip the current flashcard (`select()`)
-- `n`: Next flashcard (`next_selection()`)
-- `b`: Previous selection (`prev_selection()`)
-- `o`: Browse through your subjects (`browse_subjects()`)
-- `q`: Quit (`close_window()`)
-
-## API
-
-`flashcards.nvim` implements several functions that can be accessed and mapped.
-
-You can set `require('flashcards')` to a variable or use `lua require('flashcards').<FUNCTION>`
-to call each function.
-
-- `run()`: Entrypoint for the plugin, mapped to the command `:Flashcards`.
-- `next_selection()`: If flashcards are open, this goes to the next flashcard. If a selection window is open, this goes to the next selection.
-- `prev_selection()`: If flashcards are open, this goes to the previous flashcard. If a selection window is open, this goes to the previous selection.
-- `flip_card()`: This flips the current flashcard.
-- `select()`: If flashcards are open, this is the same as `flip_card()`. If a select window is open, this selections the current option.
-- `choose_subject()`: ***TODO*** This opens a select window and allows you to.
-- `close_window()`: Closes the current buffer for the plugin.
-- `open_subject(index)`: Opens flashcards for the given index of the `subjects` array.
-- `browse_subjects()`: Opens the select window to browse available subjects.
+To navigate through `flashcards`, you can use `n` and `l` to go to the
+next flashcard, and `b` and `h` to go to the previouse one. Use either
+`enter`, `space`, or `f` to flip the flashcard. You can use `a` to add
+a new flashcard, type the term and hit `enter`, then type the definition
+end hit `enter`.
