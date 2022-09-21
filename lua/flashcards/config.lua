@@ -7,6 +7,7 @@ local M = {
 local defaults = {
     dir = home .. '/.config/flashcards',
     flashcards = {
+        show_terms = true,
         mappings = {
             l = 'next()',
             h = 'prev()',

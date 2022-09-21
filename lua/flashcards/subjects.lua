@@ -59,8 +59,11 @@ local function update_view ()
 end
 
 local function update_subjects ()
+    M.subjects = {}
+    M.num_subjects = 0
+    local subjects = utils.get_subjects()
     local i = 1
-    for name, file in pairs(utils.get_subjects()) do
+    for name, file in pairs(subjects) do
         M.subjects[i] = {
             name = name,
             line = -1
@@ -108,7 +111,7 @@ end
 
 M.select = function ()
     M.close()
-    M.open_flashcards(M.subjects[M.current_selection])
+    M.open_flashcards(M.subjects[M.current_selection].name)
 end
 
 M.add = function ()

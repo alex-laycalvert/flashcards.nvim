@@ -5,7 +5,6 @@ local subjects = require('flashcards.subjects')
 local api = vim.api
 
 local M = {
-    info = {},
     subject = '',
     cards = {},
     num_cards = 0,
@@ -55,15 +54,15 @@ local function update_view ()
 end
 
 local function update_cards ()
-    local subject = utils.get_subject(M.info)
-    M.subject = subject.name
+    local subject = utils.get_subject(M.subject)
     M.cards = subject.cards
     M.num_cards = subject.num_cards
     M.current_card = 1
+    showing_term = config.opts.flashcards.show_terms
 end
 
-M.open = function (info)
-    M.info = info
+M.open = function (subject)
+    M.subject = subject
     update_cards()
     update_view()
 end
@@ -103,7 +102,7 @@ end
 M.add = function ()
     add_card.open(function (card)
         if utils.trim(card.term) == '' or utils.trim(card.def) == '' then return end
-        utils.create_card(card, M.info.file)
+        utils.create_card(card, M.subject)
         M.reopen()
     end)
 end

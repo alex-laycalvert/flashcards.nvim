@@ -15,8 +15,8 @@ M.setup = function (opts)
     setup_complete = true
 end
 
-M.open_flashcards = function (subject_info)
-    flashcards.open(subject_info)
+M.open_flashcards = function (subject)
+    flashcards.open(subject)
 end
 
 M.browse_subjects = function ()

@@ -162,29 +162,13 @@ M.get_subjects = function ()
 end
 
 M.get_subject = function (subject_name)
+    local subjects = M.get_subjects()
     local subject = {
-        name = subject_info.name,
-        cards = {},
+        name = subject_name,
+        cards = M.get_cards(subjects[subject_name]),
         num_cards = 0
     }
-    local subjects = M.get_subjects()
-    local filename = subjects[subjects_name]
-    local file = io.open(filename, 'r')
-    local file_json = ''
-    io.input(file)
-    local line = io.read()
-    while line ~= nil do
-        file_json = file_json .. line
-        line = io.read()
-    end
-    file:close()
-    local subject_json = json.decode(file_json)
-    local count = 0
-    for k, card in pairs(subject_json) do
-        count = count + 1
-        subject.cards[k] = card
-    end
-    subject.num_cards = count
+    subject.num_cards = M.length(subject.cards)
     return subject
 end
 
@@ -234,13 +218,15 @@ end
 
 M.delete_subject = function (subject_name)
     local subjects = M.get_subjects()
-    local file = subjects[subjects_name]
-    subject[subject_name] = nil
+    local file = subjects[subject_name]
+    subjects[subject_name] = nil
     M.write_subjects(subjects)
     os.execute('rm ' .. file)
 end
 
-M.create_card = function (card, filename)
+M.create_card = function (card, subject)
+    local subjects = M.get_subjects()
+    local filename = subjects[subject]
     if not M.file_exists(filename) then
         local code = os.execute('touch ' .. filename)
         local file = io.open(filename, 'w')
