@@ -131,6 +131,7 @@ M.edit = function ()
 end
 
 M.delete = function ()
+    if M.num_subjects <= 0 then return end
     utils.delete_subject(M.subjects[M.current_selection].name)
     M.reopen()
 end

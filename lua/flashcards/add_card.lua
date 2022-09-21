@@ -6,10 +6,8 @@ local M = {}
 local buf = -1
 local win = -1
 
-local card = {
-    term = '',
-    def = ''
-}
+local term = ''
+local def = ''
 
 local function open_buffer ()
     buf = api.nvim_create_buf(false, true)
@@ -106,20 +104,20 @@ end
 
 M.submit = function ()
     local def_tbl = api.nvim_buf_get_text(buf, 0, 0, -1, -1, {})
-    local def = utils.trim(def_tbl[1])
-    if def ~= nil and def ~= '' then
-        card.def = def
-        M.callback(card)
+    local new_def = utils.trim(def_tbl[1])
+    if new_def ~= nil and new_def ~= '' then
+        def = new_def
+        M.callback(term, def)
     end
     M.close()
 end
 
 M.submit_term = function ()
     local term_tbl = api.nvim_buf_get_text(buf, 0, 0, -1, -1, {})
-    local term = utils.trim(term_tbl[1])
+    local new_term = utils.trim(term_tbl[1])
     M.close()
-    if term ~= nil and term ~= '' then
-        card.term = term
+    if new_term ~= nil and new_term ~= '' then
+        term = new_term
         open_def_window()
     end
 end

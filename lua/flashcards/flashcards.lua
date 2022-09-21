@@ -101,9 +101,9 @@ M.flip = function ()
 end
 
 M.add = function ()
-    add_card.open(function (card)
-        if utils.trim(card.term) == '' or utils.trim(card.def) == '' then return end
-        utils.create_card(card, M.subject)
+    add_card.open(function (term, def)
+        if utils.trim(term) == '' or utils.trim(def) == '' then return end
+        utils.create_card(term, def, M.subject)
         M.reopen()
     end)
 end
@@ -117,21 +117,22 @@ M.edit = function ()
         edit.open(M.cards[M.current_card].term, function (new_term)
             if utils.trim(new_term) == '' then return end
             new_card.term = utils.trim(new_term)
-            utils.edit_card(M.cards[M.current_card], new_card, M.subject)
+            utils.edit_card(M.cards[M.current_card].term, new_card.term, new_card.def, M.subject)
             M.reopen()
         end)
     else
         edit.open(M.cards[M.current_card].def, function (new_def)
             if utils.trim(new_def) == '' then return end
             new_card.def = utils.trim(new_def)
-            utils.edit_card(M.cards[M.current_card], new_card, M.subject)
+            utils.edit_card(M.cards[M.current_card].term, new_card.term, new_card.def, M.subject)
             M.reopen()
         end)
     end
 end
 
 M.delete = function ()
-    utils.delete_card(M.cards[M.current_card], M.subject)
+    if M.num_cards <= 0 then return end
+    utils.delete_card(M.cards[M.current_card].term, M.subject)
     M.reopen()
 end
 
