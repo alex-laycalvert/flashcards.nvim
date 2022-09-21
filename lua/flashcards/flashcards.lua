@@ -1,6 +1,7 @@
 local config = require('flashcards.config')
 local utils = require('flashcards.utils')
 local add_card = require('flashcards.add_card')
+local edit = require('flashcards.edit')
 local subjects = require('flashcards.subjects')
 local api = vim.api
 
@@ -105,6 +106,29 @@ M.add = function ()
         utils.create_card(card, M.subject)
         M.reopen()
     end)
+end
+
+M.edit = function ()
+    local new_card = {
+        term = M.cards[M.current_card].term,
+        def = M.cards[M.current_card].def
+    }
+    if showing_term then
+        edit.open(M.cards[M.current_card].term, function (new_term)
+            if utils.trim(new_term) == '' then return end
+            print(new_term)
+            new_card.term = new_term
+            utils.edit_card(M.cards[M.current_card], new_card, M.subject)
+            M.reopen()
+        end)
+    else
+        edit.open(M.cards[M.current_card].def, function (new_def)
+            if utils.trim(new_def) == '' then return end
+            new_card.def = new_def
+            utils.edit_card(M.cards[M.current_card], new_card, M.subject)
+            M.reopen()
+        end)
+    end
 end
 
 M.browse_subjects = function ()
