@@ -2,17 +2,6 @@
 
 A Neovim plugin for Flashcards written in Lua
 
-*** WORK IN PROGRESS ***
-
-There are a few features that have not been implemented.
-
-## TODO
-
-- Show a confirm window before deleting subjects/cards
-- Browse all cards in subject
-- Documentation
-- Format text on flashcard so it doesn't wrap mid-word
-
 ## Installing
 
 You can install this plugin using `packer.nvim`:
@@ -67,4 +56,3 @@ Default Mappings:
 - `e`: Edit current side of flashcard.
 - `d`: Delete the current flashcard.
 - `o`: Browse all subjects.
-- `g (TODO)`: Browse all cards in the current subject.
