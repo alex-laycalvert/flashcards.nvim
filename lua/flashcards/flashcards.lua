@@ -102,6 +102,7 @@ end
 
 M.add = function ()
     add_card.open(function (card)
+        if utils.trim(card.term) == '' or utils.trim(card.def) == '' then return end
         utils.create_card(card, M.info.file)
         M.reopen()
     end)

@@ -1,3 +1,4 @@
+local utils = require('flashcards.utils')
 local api = vim.api
 
 local M = {}
@@ -32,27 +33,30 @@ local function open_window ()
         buf,
         'n',
         'q',
-        ':lua require("flashcards.add_subject").close()<CR>',
+        ':lua require("flashcards.edit").close()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_keymap(
         buf,
         'n',
         '<CR>',
-        ':lua require("flashcards.add_subject").submit()<CR>',
+        ':lua require("flashcards.edit").submit()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_keymap(
         buf,
         'i',
         '<CR>',
-        '<cmd>lua require("flashcards.add_subject").submit()<CR><ESC>',
+        '<cmd>lua require("flashcards.edit").submit()<CR><ESC>',
         { nowait = true, noremap = true, silent = true }
     )
+    api.nvim_buf_set_lines(buf, 0, -1, false, { utils.pad(M.current, 30) })
+    api.nvim_win_set_cursor(win, { 1, string.len(M.current) })
     vim.cmd('startinsert')
 end
 
-M.open = function (callback)
+M.open = function (current, callback)
+    M.current = current
     M.callback = callback
     if win < 0 then open_window() end
 end

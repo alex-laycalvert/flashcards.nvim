@@ -1,3 +1,4 @@
+local config = require('flashcards.config')
 local json = require('flashcards.json')
 local api = vim.api
 
@@ -14,6 +15,10 @@ M.slugify = function (string, replacement)
   end
   result = string.gsub(result, replacement .. "$", '')
   return result:lower()
+end
+
+M.trim = function (s)
+    return s:gsub('^%s*(.-)%s*$', '%1')
 end
 
 M.length = function (tbl)
@@ -41,8 +46,8 @@ M.create_dir = function (dir)
     local code = os.execute('mkdir ' .. dir)
 end
 
-M.create_subjects_file = function (dir)
-    local filename = dir .. '/' .. 'SUBJECTS.json'
+M.create_subjects_file = function ()
+    local filename = config.opts.dir .. '/SUBJECTS.json'
     if M.file_exists(filename) then return end
     local code = os.execute('touch ' .. filename)
     local file = io.open(filename, 'w')
@@ -70,12 +75,8 @@ M.center = function (str)
     return t
 end
 
-M.empty = function (height, width)
-    local t = {}
-    for i = 1, height do
-        t[i] = string.rep(' ', width)
-    end
-    return t
+M.pad = function (str, len)
+    return str .. string.rep(' ', len - string.len(str))
 end
 
 M.space_lines = function (lines, num_lines, spacing)
@@ -118,9 +119,16 @@ M.set_mappings = function (buf, module, mappings)
     end
 end
 
-M.get_subjects = function (dir)
+M.write_subjects = function (subjects)
+    local subjects_file = io.open(config.opts.dir .. '/SUBJECTS.json', 'w')
+    io.output(subjects_file)
+    io.write(json.encode(subjects))
+    subjects_file:close()
+end
+
+M.get_subjects = function ()
     local subjects = {}
-    local filename = dir .. '/SUBJECTS.json'
+    local filename = config.opts.dir .. '/SUBJECTS.json'
     local file = io.open(filename, 'r')
     if file == nil then
         -- TODO Error handling
@@ -188,8 +196,8 @@ M.get_cards = function (filename)
     return cards
 end
 
-M.create_subject = function (subject_name, dir)
-    local filename = dir .. '/' .. M.slugify(subject_name, '_') .. '.json'
+M.create_subject = function (subject_name)
+    local filename = config.opts.dir .. '/' .. M.slugify(M.trim(subject_name), '_') .. '.json'
     if not M.file_exists(filename) then
         local code = os.execute('touch ' .. filename)
         local file = io.open(filename, 'w')
@@ -197,15 +205,23 @@ M.create_subject = function (subject_name, dir)
         io.write('[]')
         file:close()
     end
-    local subjects = M.get_subjects(dir)
+    local subjects = M.get_subjects(config.opts.dir)
     table.insert(subjects, {
-        name = subject_name,
+        name = M.trim(subject_name),
         file = filename
     })
-    local subjects_file = io.open(dir .. '/SUBJECTS.json', 'w')
-    io.output(subjects_file)
-    io.write(json.encode(subjects))
-    subjects_file:close()
+    M.write_subjects(subjects)
+end
+
+M.edit_subject = function (subject_name, new_name)
+    local subjects = M.get_subjects()
+    for k, subject in pairs(subjects) do
+        if subject.name == subject_name then
+            subject.name = M.trim(new_name)
+            break
+        end
+    end
+    M.write_subjects(subjects)
 end
 
 M.create_card = function (card, filename)

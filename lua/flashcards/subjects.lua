@@ -1,6 +1,7 @@
 local config = require('flashcards.config')
 local utils = require('flashcards.utils')
 local add_subject = require('flashcards.add_subject')
+local edit = require('flashcards.edit')
 local api = vim.api
 
 local M = {
@@ -110,7 +111,16 @@ end
 
 M.add = function ()
     add_subject.open(function (name)
+        if utils.trim(name) == '' then return end
         utils.create_subject(name, config.opts.dir)
+        M.reopen()
+    end)
+end
+
+M.edit = function ()
+    edit.open(M.subjects[M.current_selection].name, function (new_name)
+        if utils.trim(new_name) == '' then return end
+        utils.edit_subject(M.subjects[M.current_selection].name, new_name)
         M.reopen()
     end)
 end

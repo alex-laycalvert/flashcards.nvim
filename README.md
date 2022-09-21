@@ -42,7 +42,8 @@ require('flashcards').setup({
 
 To choose from the `subjects` menu, use the normal `j` and `k` keys to go
 down and up, then `enter` to select a subject. To add a new subject from
-the menu, press `a` then type the subject name and `enter`.
+the menu, press `a` then type the subject name and `enter`. You can also
+use `e` to edit the name of a subject.
 
 To navigate through `flashcards`, you can use `n` and `l` to go to the
 next flashcard, and `b` and `h` to go to the previouse one. Use either
