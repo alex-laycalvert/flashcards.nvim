@@ -42,29 +42,31 @@ end
 local function update_view ()
     if win < 0 then open_window() end
     api.nvim_buf_set_option(buf, 'modifiable', true)
-    api.nvim_buf_set_lines(buf, 0, -1, false, utils.space_lines(
-        utils.map(
-            M.subjects,
-            function (subject) return subject.name end
-        ),
-        M.num_subjects,
-        config.opts.subjects.spacing
-    ))
-    api.nvim_win_set_cursor(0, { M.subjects[M.current_selection].line, 0 })
+    if M.num_subjects <= 0 then
+        api.nvim_buf_set_lines(buf, 0, -1, false, { 'No Subjects Available' })
+    else
+        api.nvim_buf_set_lines(buf, 0, -1, false, utils.space_lines(
+            utils.map(
+                M.subjects,
+                function (subject) return subject.name end
+            ),
+            M.num_subjects,
+            config.opts.subjects.spacing
+        ))
+        api.nvim_win_set_cursor(0, { M.subjects[M.current_selection].line, 0 })
+    end
     api.nvim_buf_set_option(0, 'modifiable', false)
 end
 
 local function update_subjects ()
-    M.subjects = utils.map(
-        utils.get_subjects(config.opts.dir),
-        function (subject)
-            return {
-                name = subject.name,
-                file = subject.file,
-                line = -1
-            }
-        end
-    )
+    local i = 1
+    for name, file in pairs(utils.get_subjects()) do
+        M.subjects[i] = {
+            name = name,
+            line = -1
+        }
+        i = i + 1
+    end
     M.num_subjects = utils.length(M.subjects)
     local current_index = 1
     for i = 1, M.num_subjects * config.opts.subjects.spacing + config.opts.subjects.spacing do
@@ -123,6 +125,11 @@ M.edit = function ()
         utils.edit_subject(M.subjects[M.current_selection].name, new_name)
         M.reopen()
     end)
+end
+
+M.delete = function ()
+    utils.delete_subject(M.subjects[M.current_selection].name)
+    M.reopen()
 end
 
 M.close = function ()

@@ -35,10 +35,22 @@ M.map = function (tbl, f)
     return t
 end
 
+M.filter = function (tbl, f)
+    local t = {}
+    for k, v in pairs(tbl) do
+        if f(v) then t[k] = v end
+    end
+    return t
+end
+
 M.file_exists = function (file)
     local f = io.open(file, 'r')
     if f then f:close() end
     return f ~= nil
+end
+
+M.delete_file = function (file)
+    return os.execute('rm ' .. file)
 end
 
 M.create_dir = function (dir)
@@ -143,22 +155,20 @@ M.get_subjects = function ()
     end
     file:close()
     local subjects_json = json.decode(file_json)
-    for k, subject in pairs(subjects_json) do
-        subjects[k] = {
-            name = subject.name,
-            file = subject.file
-        }
+    for name, file in pairs(subjects_json) do
+        subjects[name] = file
     end
     return subjects
 end
 
-M.get_subject = function (subject_info)
+M.get_subject = function (subject_name)
     local subject = {
         name = subject_info.name,
         cards = {},
         num_cards = 0
     }
-    local filename = subject_info.file
+    local subjects = M.get_subjects()
+    local filename = subjects[subjects_name]
     local file = io.open(filename, 'r')
     local file_json = ''
     io.input(file)
@@ -204,24 +214,30 @@ M.create_subject = function (subject_name)
         io.output(file)
         io.write('[]')
         file:close()
+        local subjects = M.get_subjects(config.opts.dir)
+        subjects[M.trim(subject_name)] =  filename
+        M.write_subjects(subjects)
     end
-    local subjects = M.get_subjects(config.opts.dir)
-    table.insert(subjects, {
-        name = M.trim(subject_name),
-        file = filename
-    })
-    M.write_subjects(subjects)
 end
 
 M.edit_subject = function (subject_name, new_name)
     local subjects = M.get_subjects()
-    for k, subject in pairs(subjects) do
-        if subject.name == subject_name then
-            subject.name = M.trim(new_name)
+    for name, file in pairs(subjects) do
+        if name == subject_name then
+            subjects[name] = nil
+            subjects[M.trim(new_name)] = file
             break
         end
     end
     M.write_subjects(subjects)
+end
+
+M.delete_subject = function (subject_name)
+    local subjects = M.get_subjects()
+    local file = subjects[subjects_name]
+    subject[subject_name] = nil
+    M.write_subjects(subjects)
+    os.execute('rm ' .. file)
 end
 
 M.create_card = function (card, filename)
