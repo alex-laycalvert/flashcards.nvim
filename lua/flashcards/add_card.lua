@@ -106,8 +106,9 @@ end
 
 M.submit = function ()
     local def_tbl = api.nvim_buf_get_text(buf, 0, 0, -1, -1, {})
-    if def_tbl[1] ~= nil and def_tbl[1] ~= '' then
-        card.def = def_tbl[1]
+    local def = utils.trim(def_tbl[1])
+    if def ~= nil and def ~= '' then
+        card.def = def
         M.callback(card)
     end
     M.close()
@@ -115,9 +116,10 @@ end
 
 M.submit_term = function ()
     local term_tbl = api.nvim_buf_get_text(buf, 0, 0, -1, -1, {})
+    local term = utils.trim(term_tbl[1])
     M.close()
-    if term_tbl[1] ~= nil and term_tbl[1] ~= '' then
-        card.term = term_tbl[1]
+    if term ~= nil and term ~= '' then
+        card.term = term
         open_def_window()
     end
 end

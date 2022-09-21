@@ -116,19 +116,23 @@ M.edit = function ()
     if showing_term then
         edit.open(M.cards[M.current_card].term, function (new_term)
             if utils.trim(new_term) == '' then return end
-            print(new_term)
-            new_card.term = new_term
+            new_card.term = utils.trim(new_term)
             utils.edit_card(M.cards[M.current_card], new_card, M.subject)
             M.reopen()
         end)
     else
         edit.open(M.cards[M.current_card].def, function (new_def)
             if utils.trim(new_def) == '' then return end
-            new_card.def = new_def
+            new_card.def = utils.trim(new_def)
             utils.edit_card(M.cards[M.current_card], new_card, M.subject)
             M.reopen()
         end)
     end
+end
+
+M.delete = function ()
+    utils.delete_card(M.cards[M.current_card], M.subject)
+    M.reopen()
 end
 
 M.browse_subjects = function ()

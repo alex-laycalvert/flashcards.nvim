@@ -139,7 +139,7 @@ M.write_subjects = function (subjects)
 end
 
 M.write_cards = function (cards, filename)
-    local file = io.open(filename)
+    local file = io.open(filename, 'w')
     io.output(file)
     io.write(json.encode(cards))
     file:close()
@@ -251,6 +251,19 @@ M.edit_card = function (card, new_card, subject)
     for k, v in pairs(cards) do
         if v.term == card.term and v.def == card.def then
             cards[k] = new_card
+        end
+    end
+    M.write_cards(cards, filename)
+end
+
+M.delete_card = function (card, subject)
+    local subjects = M.get_subjects()
+    local filename = subjects[subject]
+    if not M.file_exists(filename) then return end
+    local cards = M.get_cards(filename)
+    for k, v in pairs(cards) do
+        if v.term == card.term and v.def == card.def then
+            cards[k] = nil
         end
     end
     M.write_cards(cards, filename)

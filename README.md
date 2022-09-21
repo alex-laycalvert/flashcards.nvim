@@ -8,12 +8,10 @@ There are a few features that have not been implemented.
 
 ## TODO
 
-- [ ] Show a confirm window before deleting subjects/cards
-- [ ] Delete card from flashcards
-- [ ] Edit flashcard term and def while viewing cards
-- [ ] Browse all cards in subject
-- [ ] Documentation
-- [ ] Format text on flashcard so it doesn't wrap mid-word
+- Show a confirm window before deleting subjects/cards
+- Browse all cards in subject
+- Documentation
+- Format text on flashcard so it doesn't wrap mid-word
 
 ## Installing
 
@@ -66,7 +64,7 @@ Default Mappings:
 - `f`, `enter`, `space`: Flip flashcard.
 - `a`: Add a new flashcard. A window will popup for you to enter the term, then
        another to enter the definition.
-- `e (TODO)`: Edit current show side of flashcard.
-- `d (TODO)`: Delete the current flashcard.
+- `e`: Edit current side of flashcard.
+- `d`: Delete the current flashcard.
 - `o`: Browse all subjects.
 - `g (TODO)`: Browse all cards in the current subject.
