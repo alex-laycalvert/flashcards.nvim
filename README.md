@@ -10,7 +10,6 @@ There are a few features that have not been implemented.
 
 - [ ] Delete subject from browse menu
 - [ ] Delete card from flashcards w/ config
-- [ ] Edit subject name from browse menu
 - [ ] Edit flashcard term and def while viewing cards
 - [ ] Browse all cards in subject
 - [ ] Documentation
