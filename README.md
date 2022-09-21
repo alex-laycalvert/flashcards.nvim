@@ -8,8 +8,8 @@ There are a few features that have not been implemented.
 
 ## TODO
 
-- [ ] Delete subject from browse menu
-- [ ] Delete card from flashcards w/ config
+- [ ] Show a confirm window before deleting subjects/cards
+- [ ] Delete card from flashcards
 - [ ] Edit flashcard term and def while viewing cards
 - [ ] Browse all cards in subject
 - [ ] Documentation
@@ -36,16 +36,37 @@ require('flashcards').setup({
 ## Configuration
 
 - `dir`: Directory where flashcards are stored (default: `$HOME/.config/flashcards`)
+- `flashcards = { ... }`: Config for flashcards
+  - `show_terms`: Boolean value for whether flashcards should show terms first (default: `true`)
+- `subjects = { ... }`: Config for the subjects menu
+  - `spacing`: Separation between subject options (default `2`)
+
+## Subjects
+
+Subjects are collections of flashcards and are stored as `json` files in your
+flashcards `dir`. When openening `Flashcards`, a browse subjects menu will open
+allowing you to create, open, edit, and delete your subjects.
+
+Default Mappings:
+- `j`, `k`: Moving up and down respectively.
+- `a`: Create a new subject. Window opens for you to type the name.
+- `e`: Edit the name of a subject. Window opens to change the name.
+- `d`: Delete the selected subject, no confirm window pops up.
+- `q`: Close window.
+- `enter`: Open the selected subject.
 
 ## Flashcards
 
-To choose from the `subjects` menu, use the normal `j` and `k` keys to go
-down and up, then `enter` to select a subject. To add a new subject from
-the menu, press `a` then type the subject name and `enter`. You can also
-use `e` to edit the name of a subject.
+Flashcards can be viewed by opening a subject and can be
+created, edited (`TODO`), flipped, and deleted (`TODO`).
 
-To navigate through `flashcards`, you can use `n` and `l` to go to the
-next flashcard, and `b` and `h` to go to the previouse one. Use either
-`enter`, `space`, or `f` to flip the flashcard. You can use `a` to add
-a new flashcard, type the term and hit `enter`, then type the definition
-end hit `enter`.
+Default Mappings:
+- `n`, `l`: Goto next flashcard.
+- `b`, `h`: Goto previous flashcard.
+- `f`, `enter`, `space`: Flip flashcard.
+- `a`: Add a new flashcard. A window will popup for you to enter the term, then
+       another to enter the definition.
+- `e (TODO)`: Edit current show side of flashcard.
+- `d (TODO)`: Delete the current flashcard.
+- `o`: Browse all subjects.
+- `g (TODO)`: Browse all cards in the current subject.
