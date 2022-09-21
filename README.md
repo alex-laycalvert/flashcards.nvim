@@ -13,6 +13,8 @@ There are a few features that have not been implemented.
 - [ ] Edit subject name from browse menu
 - [ ] Edit flashcard term and def while viewing cards
 - [ ] Browse all cards in subject
+- [ ] Documentation
+- [ ] Format text on flashcard so it doesn't wrap mid-word
 
 ## Installing
 
