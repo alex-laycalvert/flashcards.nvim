@@ -42,6 +42,10 @@ Default Mappings:
 - `q`: Close window.
 - `enter`: Open the selected subject.
 
+***NOTE***: If you open the subjects browse menu while your flashcards are open
+and you delete the subject you are currently on, you will need to quit and reopen
+flashcards to avoid a file not found error.
+
 ## Flashcards
 
 Flashcards can be viewed by opening a subject and can be
