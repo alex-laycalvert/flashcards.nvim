@@ -1,6 +1,6 @@
 # flashcards.nvim
 
-A Neovim plugin for Flashcards written in Lua
+A Neovim Lua plugin for creating and studying flashcards.
 
 ## Installing
 
@@ -45,7 +45,7 @@ Default Mappings:
 ## Flashcards
 
 Flashcards can be viewed by opening a subject and can be
-created, edited (`TODO`), flipped, and deleted (`TODO`).
+created, edited, flipped, and deleted.
 
 Default Mappings:
 - `n`, `l`: Goto next flashcard.

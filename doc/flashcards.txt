@@ -1,1 +1,98 @@
-TODO
+==============================================================================
+INTRODUCTION                                                  *flashcards.nvim
+
+A Neovim Lua plugin for creating and studing flashcards.
+
+To get started, just run `:Flashcards`.
+
+
+==============================================================================
+SETUP                                                      *flashcards.setup()                       
+
+telekasten.setup({opts})
+    Setup function ran by the user to enable flashcards and specify
+    configuration options.
+
+    Usage:
+
+    require('flashcards').setup{
+        -- Configurations go here
+        -- key = value
+
+        flashcards = {
+            -- Configurations for viewing flashcards go here
+            -- key = value
+        },
+
+        subjects = {
+            -- Configurations for viewing subjects go here
+            -- key = value
+        }
+    }
+
+    Valid keys for {opts}
+
+                                                           *flashcards.dir
+    dir:
+        Location where the flashcards will be stored. All flashcards are
+        stored in a `json` file that represents the subject they belong to
+
+        Default: `$HOME/.config/flashcards`
+
+                                              *flashcards.setup.flashcards 
+    Valid keys for {opts.flashcards}
+
+                                 *flashcards.setup.flashcards.mappings
+        mappings:
+            Table of key mappings used when viewing flashcards.
+
+            Defaults:
+
+            `TODO`
+
+                                                *flashcards.setup.subjects 
+    Valid keys for {opts.subjects}
+
+                                   *flashcards.setup.subjects.mappings
+        mappings:
+            Table of key mappings used when viewing flashcards.
+
+            Defaults:
+
+            `TODO`
+
+
+==============================================================================
+SUBJECTS                                                   *flashcards.subjects                       
+
+Subjects are collections of flashcards and are stored as `json` files in your
+flashcards `dir` (see |flashcards.dir|). When openening `Flashcards`, a browse
+subjects menu will open allowing you to create, open, edit, and delete your
+subjects.
+
+Default Mappings:
+- `j`, `k`: Moving up and down respectively.
+- `a`: Create a new subject. Window opens for you to type the name.
+- `e`: Edit the name of a subject. Window opens to change the name.
+- `d`: Delete the selected subject, no confirm window pops up.
+- `q`: Close window.
+- `enter`: Open the selected subject.
+
+==============================================================================
+FLASHCARDS                                               *flashcards.flashcards                       
+
+Flashcards can be viewed by opening a subject and can be created, edited,
+flipped, and deleted.
+
+Default Mappings:
+- `n`, `l`: Goto next flashcard.
+- `b`, `h`: Goto previous flashcard.
+- `f`, `enter`, `space`: Flip flashcard.
+- `a`: Add a new flashcard. A window will popup for you to enter the term, then
+       another to enter the definition.
+- `e`: Edit current side of flashcard.
+- `d`: Delete the current flashcard.
+- `o`: Browse all subjects (see |flashcards.subjects|).
+
+
+vim:tw=78:ts=8:ft=help:norl:
