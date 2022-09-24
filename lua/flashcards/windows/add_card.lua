@@ -77,21 +77,21 @@ local function open_def_window ()
         buf,
         'n',
         'q',
-        ':lua require("flashcards.add_card").close()<CR>',
+        ':lua require("flashcards.windows.add_card").close()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_keymap(
         buf,
         'n',
         '<CR>',
-        ':lua require("flashcards.add_card").submit()<CR>',
+        ':lua require("flashcards.windows.add_card").submit()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_keymap(
         buf,
         'i',
         '<CR>',
-        '<cmd>lua require("flashcards.add_card").submit()<CR><ESC>',
+        '<cmd>lua require("flashcards.windows.add_card").submit()<CR><ESC>',
         { nowait = true, noremap = true, silent = true }
     )
     vim.cmd('startinsert')

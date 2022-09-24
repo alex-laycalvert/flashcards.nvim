@@ -1,4 +1,5 @@
 local config = require('flashcards.config')
+local scan = require('plenary.scandir')
 local json = require('flashcards.json')
 local api = vim.api
 
@@ -64,7 +65,7 @@ M.create_subjects_file = function ()
     local code = os.execute('touch ' .. filename)
     local file = io.open(filename, 'w')
     io.output(file)
-    io.write('[]')
+    io.write('{}')
     file:close()
 end
 
@@ -96,7 +97,7 @@ M.space_lines = function (lines, num_lines, spacing)
     local current_index = 1
     for i = 1, num_lines * spacing + spacing do
         if i % spacing == 0 and current_index <= num_lines then
-            t[i] = M.center_line(lines[current_index])
+            t[i] = lines[current_index]
             current_index = current_index + 1
         else
             t[i] = ''
@@ -125,7 +126,7 @@ M.set_mappings = function (buf, module, mappings)
             buf,
             'n',
             k,
-            ':lua require("flashcards.' .. module .. '").' .. mapping .. '<CR>', {
+            ':lua require("flashcards.windows.' .. module .. '").' .. mapping .. '<CR>', {
             nowait = true, noremap = true, silent = true
         })
     end
@@ -133,8 +134,12 @@ end
 
 M.write_subjects = function (subjects)
     local subjects_file = io.open(config.opts.dir .. '/SUBJECTS.json', 'w')
+    local subjects_to_write = {}
+    for _, v in pairs(subjects) do
+        subjects_to_write[v.name] = v.dir
+    end
     io.output(subjects_file)
-    io.write(json.encode(subjects))
+    io.write(json.encode(subjects_to_write))
     subjects_file:close()
 end
 
@@ -143,73 +148,6 @@ M.write_cards = function (cards, filename)
     io.output(file)
     io.write(json.encode(cards))
     file:close()
-end
-
-M.get_subjects = function ()
-    local filename = config.opts.dir .. '/SUBJECTS.json'
-    local file = io.open(filename, 'r')
-    if file == nil then
-        -- TODO Error handling
-        return {}
-    end
-    local file_json = ''
-    io.input(file)
-    local line = io.read()
-    while line ~= nil do
-        file_json = file_json .. line
-        line = io.read()
-    end
-    file:close()
-    local subjects = json.decode(file_json)
-    return subjects
-end
-
-M.get_subject = function (subject_name)
-    local subjects = M.get_subjects()
-    local subject_cards = M.get_cards(subjects[subject_name])
-    local cards = {}
-    local i = 1
-    for term, def in pairs(subject_cards) do
-        cards[i] = {
-            term = term,
-            def = def
-        }
-        i = i + 1
-    end
-    local subject = {
-        name = subject_name,
-        cards = cards,
-        num_cards = i - 1
-    }
-    return subject
-end
-
-M.get_cards = function (filename)
-    local file = io.open(filename, 'r')
-    local file_json = ''
-    io.input(file)
-    local line = io.read()
-    while line ~= nil do
-        file_json = file_json .. line
-        line = io.read()
-    end
-    file:close()
-    local cards = json.decode(file_json)
-    return cards
-end
-
-M.create_subject = function (subject_name)
-    local filename = config.opts.dir .. '/' .. M.slugify(M.trim(subject_name), '_') .. '.json'
-    if not M.file_exists(filename) then
-        local code = os.execute('touch ' .. filename)
-        local file = io.open(filename, 'w')
-        io.output(file)
-        io.write('[]')
-        file:close()
-        local subjects = M.get_subjects(config.opts.dir)
-        subjects[M.trim(subject_name)] =  filename
-        M.write_subjects(subjects)
-    end
 end
 
 M.edit_subject = function (subject_name, new_name)
@@ -259,5 +197,75 @@ M.delete_card = function (term, subject)
     cards[term] = nil
     M.write_cards(cards, filename)
 end
+
+M.read_json = function (filename)
+    local file = io.open(filename, 'r')
+    if file == nil then
+        -- TODO Error handling
+        return {}
+    end
+    local file_json = ''
+    io.input(file)
+    local line = io.read()
+    while line ~= nil do
+        file_json = file_json .. line
+        line = io.read()
+    end
+    file:close()
+    return json.decode(file_json)
+end
+
+M.get_subjects = function ()
+    local subjects = {}
+    local filename = config.opts.dir .. '/SUBJECTS.json'
+    local subject_info = {}
+    for k, v in pairs(M.read_json(filename)) do
+        local subject = M.get_subject({ name = k, dir = v })
+        table.insert(subjects, subject)
+    end
+    return subjects
+end
+
+M.get_subject = function (subject_info)
+    local subject = {
+        name = subject_info.name,
+        dir = subject_info.dir,
+        cards = {},
+        num_cards = 0,
+        known_cards = 0,
+    }
+    local card_files = scan.scan_dir(subject.dir, { hidden = true, depth = 2 })
+    local card_count = 0
+    local known_count = 0
+    for _, card_file in pairs(card_files) do
+        local card = M.read_json(card_file)
+        table.insert(subject.cards, card)
+        card_count = card_count + 1
+        if card.known then
+            known_count = known_count + 1
+        end
+    end
+    subject.num_cards = card_count
+    subject.known_cards = known_count
+    return subject
+end
+
+M.add_subject = function (subject_name)
+    local dirname = config.opts.dir .. '/' .. M.slugify(M.trim(subject_name), '_')
+    if not M.file_exists(dirname) then
+        local code = os.execute('mkdir ' .. dirname)
+        -- TODO error handling
+        local subjects = M.get_subjects()
+        table.insert(subjects, {
+            name = subject_name,
+            dir = dirname,
+            cards = {},
+            num_cards = 0,
+            known_cards = 0
+        })
+        M.write_subjects(subjects)
+    end
+end
+
 
 return M

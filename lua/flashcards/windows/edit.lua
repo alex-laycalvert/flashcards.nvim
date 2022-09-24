@@ -33,21 +33,21 @@ local function open_window ()
         buf,
         'n',
         'q',
-        ':lua require("flashcards.edit").close()<CR>',
+        ':lua require("flashcards.windows.edit").close()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_keymap(
         buf,
         'n',
         '<CR>',
-        ':lua require("flashcards.edit").submit()<CR>',
+        ':lua require("flashcards.windows.edit").submit()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_keymap(
         buf,
         'i',
         '<CR>',
-        '<cmd>lua require("flashcards.edit").submit()<CR><ESC>',
+        '<cmd>lua require("flashcards.windows.edit").submit()<CR><ESC>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_lines(buf, 0, -1, false, { utils.pad(M.current, 30) })

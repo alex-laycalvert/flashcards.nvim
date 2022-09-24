@@ -1,7 +1,7 @@
 local config = require('flashcards.config')
 local utils = require('flashcards.utils')
-local add_subject = require('flashcards.add_subject')
-local edit = require('flashcards.edit')
+local add_subject = require('flashcards.windows.add_subject')
+local edit = require('flashcards.windows.edit')
 local api = vim.api
 
 local M = {
@@ -22,8 +22,10 @@ local function open_window ()
     local gwidth = api.nvim_list_uis()[1].width
     local gheight = api.nvim_list_uis()[1].height
     local height =
-        M.num_subjects * config.opts.subjects.spacing + config.opts.subjects.spacing - 1
-    local width = 40
+        M.num_subjects *
+        config.opts.subjects.spacing +
+        config.opts.subjects.spacing - 1 + 8
+    local width = 60
     local win_opts = {
         relative = 'editor',
         style = 'minimal',
@@ -42,17 +44,32 @@ end
 local function update_view ()
     if win < 0 then open_window() end
     api.nvim_buf_set_option(buf, 'modifiable', true)
+    api.nvim_buf_set_lines(buf, 0, -1, false, {
+        '',
+        utils.center_line('flashcards'),
+        '',
+        '────────────────────────────────────────────────────────────',
+        '                                    │            │          ',
+        ' Subject                            │ # of Cards │ Progress ',
+        '                                    │            │          ',
+        '────────────────────────────────────────────────────────────',
+        '                                    │            │          ',
+    })
     if M.num_subjects <= 0 then
-        api.nvim_buf_set_lines(buf, 0, -1, false, { 'No Subjects Available' })
+        api.nvim_buf_set_lines(buf, 10, -1, false, utils.center('No Subjects Available'))
     else
-        api.nvim_buf_set_lines(buf, 0, -1, false, utils.space_lines(
-            utils.map(
-                M.subjects,
-                function (subject) return subject.name end
-            ),
-            M.num_subjects,
-            config.opts.subjects.spacing
-        ))
+        local i = 10
+        for k, v in pairs(M.subjects) do
+            local percent = v.known_cards / 1.0 / v.num_cards
+            if v.num_cards == 0 then percent = 0 end
+            api.nvim_buf_set_lines(buf, i, -1, false, {
+                ' ' .. utils.pad(v.name, 35) .. '│' ..
+                utils.pad('    ' .. v.num_cards, 12) .. '│' ..
+                utils.pad('    ' .. tostring(percent) .. ' %', 10),
+                utils.pad(' ', 36) .. '│' .. utils.pad(' ', 12) .. '│',
+            })
+            i = i + 1
+        end
         api.nvim_win_set_cursor(0, { M.subjects[M.current_selection].line, 0 })
     end
     api.nvim_buf_set_option(0, 'modifiable', false)
@@ -63,9 +80,13 @@ local function update_subjects ()
     M.num_subjects = 0
     local subjects = utils.get_subjects()
     local i = 1
-    for name, file in pairs(subjects) do
+    for _, v in pairs(subjects) do
         M.subjects[i] = {
-            name = name,
+            name = v.name,
+            dir = v.dir,
+            cards = v.cards, 
+            num_cards = v.num_cards,
+            known_cards = v.known_cards,
             line = -1
         }
         i = i + 1
@@ -74,7 +95,7 @@ local function update_subjects ()
     local current_index = 1
     for i = 1, M.num_subjects * config.opts.subjects.spacing + config.opts.subjects.spacing do
         if i % config.opts.subjects.spacing == 0 and current_index <= M.num_subjects then
-            M.subjects[current_index].line = i
+            M.subjects[current_index].line = i + 8
             current_index = current_index + 1
         end
     end
@@ -111,13 +132,13 @@ end
 
 M.select = function ()
     M.close()
-    M.open_flashcards(M.subjects[M.current_selection].name)
+    M.open_flashcards(M.subjects[M.current_selection])
 end
 
 M.add = function ()
     add_subject.open(function (name)
         if utils.trim(name) == '' then return end
-        utils.create_subject(name, config.opts.dir)
+        utils.add_subject(name)
         M.reopen()
     end)
 end

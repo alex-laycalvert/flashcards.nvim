@@ -1,6 +1,6 @@
 local config = require('flashcards.config')
-local subjects = require('flashcards.subjects')
-local flashcards = require('flashcards.flashcards')
+local subjects = require('flashcards.windows.subjects')
+local flashcards = require('flashcards.windows.flashcards')
 local utils = require('flashcards.utils')
 
 local M = {}

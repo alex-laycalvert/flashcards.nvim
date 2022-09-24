@@ -1,14 +1,12 @@
 local config = require('flashcards.config')
 local utils = require('flashcards.utils')
-local add_card = require('flashcards.add_card')
-local edit = require('flashcards.edit')
-local subjects = require('flashcards.subjects')
+local add_card = require('flashcards.windows.add_card')
+local edit = require('flashcards.windows.edit')
+local subjects = require('flashcards.windows.subjects')
 local api = vim.api
 
 local M = {
-    subject = '',
-    cards = {},
-    num_cards = 0,
+    subject = {},
     current_card = 0
 }
 local buf = -1
@@ -43,10 +41,12 @@ end
 
 local function update_view ()
     if win < 0 then open_window() end
-    if M.num_cards <= 0 then
+    if M.subject.num_cards <= 0 then
         current_text = 'No Flashcards Available'
     else
-        current_text = showing_term and M.cards[M.current_card].term or M.cards[M.current_card].def
+        current_text = showing_term
+            and M.subject.cards[M.current_card].term
+            or M.subject.cards[M.current_card].def
     end
     api.nvim_buf_set_option(buf, 'modifiable', true)
     api.nvim_buf_set_lines(buf, 0, -1, false, utils.center(current_text))
@@ -56,8 +56,6 @@ end
 
 local function update_cards ()
     local subject = utils.get_subject(M.subject)
-    M.cards = subject.cards
-    M.num_cards = subject.num_cards
     M.current_card = 1
     showing_term = config.opts.flashcards.show_terms
 end
@@ -75,9 +73,9 @@ M.reopen = function ()
 end
 
 M.next = function ()
-    if M.num_cards <= 0 then return end
+    if M.subject.num_cards <= 0 then return end
     M.current_card = M.current_card + 1
-    if M.current_card > M.num_cards then
+    if M.current_card > M.subject.num_cards then
         M.current_card = 1
     end
     showing_term = true
@@ -85,17 +83,17 @@ M.next = function ()
 end
 
 M.prev = function ()
-    if M.num_cards <= 0 then return end
+    if M.subject.num_cards <= 0 then return end
     M.current_card = M.current_card - 1
     if M.current_card <= 0 then
-        M.current_card = M.num_cards
+        M.current_card = M.subject.num_cards
     end
     showing_term = true
     update_view()
 end
 
 M.flip = function ()
-    if M.num_cards <= 0 then return end
+    if M.subject.num_cards <= 0 then return end
     showing_term = not showing_term
     update_view()
 end
@@ -132,14 +130,14 @@ end
 
 M.delete = function ()
     if M.num_cards <= 0 then return end
-    utils.delete_card(M.cards[M.current_card].term, M.subject)
+    utils.delete_card(M.subject.cards[M.current_card].term, M.subject)
     M.reopen()
 end
 
 M.browse_subjects = function ()
-    subjects.open(function (subject_info)
+    subjects.open(function (subject)
         M.close()
-        M.open(subject_info)
+        M.open(subject)
     end)
 end
 
