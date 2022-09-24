@@ -1,5 +1,5 @@
 
-                    --- Subjects Browse Menu ---
+                      --- Subjects Browse Menu ---
           ┌──────────────────────────────────────────────────┐
           │                                                  │
           │                     flashcards                   │
@@ -10,7 +10,7 @@
           │                         │            │           │
           │──────────────────────────────────────────────────│ 
           │                         │            │           │
-          │ Subject 1               │     17     │    86 %   │
+          │ Subject 1               │     17     │    86 %   │ 
           │                         │            │           │
           │ Subject 2               │     28     │   100 %   │
           │                         │            │           │
@@ -20,8 +20,48 @@
           │                         │            │           │
           └──────────────────────────────────────────────────┘
 
+          - # of Cards will be colored Blue
+          - Progress will be colored as follows:
+            - Red: < 25 %
+            - Orange: < 50 %
+            - Yellow: < 75 %
+            - Green: < 100 %
 
 
+        --- Storing Flashcard Data ---
+
+        ~/.config/flashcards
+            - SUBJECTS.json
+            - subject1/
+                - card1.json
+                - card2.json
+                - ...
+            - subject2/
+                - card1.json
+                - card2.json
+                - ...
+            - ...
+
+        --- SUBJECTS.json ---
+
+        Stores list of all subjects and their corresponding directories.
+
+        {
+            "<SUBJECT NAME>": "<SUBJECT DIR>"
+            ...
+        }
+
+        --- subject/ ---
+        
+        Stores all card files.
+
+        --- card.json ---
+
+        {
+            "term": "<TERM>",
+            "def": "<def>",
+            "known": boolean (default false)
+        }
 
 
 
