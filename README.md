@@ -2,6 +2,11 @@
 
 A Neovim Lua plugin for creating and studying flashcards.
 
+***NOTE***: If you were using this plugin before the most recent
+            commit then unfortunately your flashcards will no longer
+            work because of the restructuring of how flashcards are
+            stored. I apologize.
+
 ## Installing
 
 You can install this plugin using `packer.nvim`:
