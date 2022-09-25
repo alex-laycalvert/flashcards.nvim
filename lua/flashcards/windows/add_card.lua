@@ -36,21 +36,21 @@ local function open_term_window ()
         buf,
         'n',
         'q',
-        ':lua require("flashcards.add_card").close()<CR>',
+        ':lua require("flashcards.windows.add_card").close()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_keymap(
         buf,
         'n',
         '<CR>',
-        ':lua require("flashcards.add_card").submit_term()<CR>',
+        ':lua require("flashcards.windows.add_card").submit_term()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     api.nvim_buf_set_keymap(
         buf,
         'i',
         '<CR>',
-        '<cmd>lua require("flashcards.add_card").submit_term()<CR>',
+        '<cmd>lua require("flashcards.windows.add_card").submit_term()<CR>',
         { nowait = true, noremap = true, silent = true }
     )
     vim.cmd('startinsert')

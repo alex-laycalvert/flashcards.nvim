@@ -12,6 +12,7 @@ local M = {
 }
 local buf = -1
 local win = -1
+local offset = 9
 
 local function open_buffer ()
     buf = api.nvim_create_buf(false, true)
@@ -22,9 +23,7 @@ local function open_window ()
     local gwidth = api.nvim_list_uis()[1].width
     local gheight = api.nvim_list_uis()[1].height
     local height =
-        M.num_subjects *
-        config.opts.subjects.spacing +
-        config.opts.subjects.spacing - 1 + 8
+        M.num_subjects * 2 + offset
     local width = 60
     local win_opts = {
         relative = 'editor',
@@ -56,11 +55,14 @@ local function update_view ()
         '                                    │            │          ',
     })
     if M.num_subjects <= 0 then
-        api.nvim_buf_set_lines(buf, 10, -1, false, utils.center('No Subjects Available'))
+        api.nvim_buf_set_lines(buf, offset - 1, offset - 1, false, {
+            utils.center_line('No Subjects Available')
+        })
+        api.nvim_win_set_cursor(0, { offset, 0 })
     else
-        local i = 10
+        local i = offset
         for k, v in pairs(M.subjects) do
-            local percent = v.known_cards / 1.0 / v.num_cards
+            local percent = 100 * v.known_cards / v.num_cards
             if v.num_cards == 0 then percent = 0 end
             api.nvim_buf_set_lines(buf, i, -1, false, {
                 ' ' .. utils.pad(v.name, 35) .. '│' ..
@@ -68,7 +70,7 @@ local function update_view ()
                 utils.pad('    ' .. tostring(percent) .. ' %', 10),
                 utils.pad(' ', 36) .. '│' .. utils.pad(' ', 12) .. '│',
             })
-            i = i + 1
+            i = i + 2
         end
         api.nvim_win_set_cursor(0, { M.subjects[M.current_selection].line, 0 })
     end
@@ -91,13 +93,9 @@ local function update_subjects ()
         }
         i = i + 1
     end
-    M.num_subjects = utils.length(M.subjects)
-    local current_index = 1
-    for i = 1, M.num_subjects * config.opts.subjects.spacing + config.opts.subjects.spacing do
-        if i % config.opts.subjects.spacing == 0 and current_index <= M.num_subjects then
-            M.subjects[current_index].line = i + 8
-            current_index = current_index + 1
-        end
+    M.num_subjects = i - 1
+    for i = 1, M.num_subjects do
+        M.subjects[i].line = i * 2 + offset - 1
     end
     M.current_selection = 1
 end
@@ -146,14 +144,19 @@ end
 M.edit = function ()
     edit.open(M.subjects[M.current_selection].name, function (new_name)
         if utils.trim(new_name) == '' then return end
-        utils.edit_subject(M.subjects[M.current_selection].name, new_name)
+        utils.edit_subject(M.subjects[M.current_selection], utils.trim(new_name))
         M.reopen()
     end)
 end
 
 M.delete = function ()
     if M.num_subjects <= 0 then return end
-    utils.delete_subject(M.subjects[M.current_selection].name)
+    utils.delete_subject(M.subjects[M.current_selection])
+    M.reopen()
+end
+
+M.reset = function ()
+    utils.reset_subject_progress(M.subjects[M.current_selection])
     M.reopen()
 end
 

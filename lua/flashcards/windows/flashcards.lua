@@ -47,6 +47,9 @@ local function update_view ()
         current_text = showing_term
             and M.subject.cards[M.current_card].term
             or M.subject.cards[M.current_card].def
+        if M.subject.cards[M.current_card].known then
+            current_text = current_text .. ' ✅'
+        end
     end
     api.nvim_buf_set_option(buf, 'modifiable', true)
     api.nvim_buf_set_lines(buf, 0, -1, false, utils.center(current_text))
@@ -55,7 +58,7 @@ local function update_view ()
 end
 
 local function update_cards ()
-    local subject = utils.get_subject(M.subject)
+    M.subject = utils.get_subject(M.subject)
     M.current_card = 1
     showing_term = config.opts.flashcards.show_terms
 end
@@ -101,37 +104,45 @@ end
 M.add = function ()
     add_card.open(function (term, def)
         if utils.trim(term) == '' or utils.trim(def) == '' then return end
-        utils.create_card(term, def, M.subject)
+        utils.add_card(term, def, M.subject)
         M.reopen()
     end)
 end
 
 M.edit = function ()
     local new_card = {
-        term = M.cards[M.current_card].term,
-        def = M.cards[M.current_card].def
+        term = M.subject.cards[M.current_card].term,
+        def = M.subject.cards[M.current_card].def
     }
     if showing_term then
-        edit.open(M.cards[M.current_card].term, function (new_term)
+        edit.open(M.subject.cards[M.current_card].term, function (new_term)
             if utils.trim(new_term) == '' then return end
             new_card.term = utils.trim(new_term)
-            utils.edit_card(M.cards[M.current_card].term, new_card.term, new_card.def, M.subject)
+            utils.edit_card(M.subject.cards[M.current_card].file, new_card.term, new_card.def)
             M.reopen()
         end)
     else
-        edit.open(M.cards[M.current_card].def, function (new_def)
+        edit.open(M.subject.cards[M.current_card].def, function (new_def)
             if utils.trim(new_def) == '' then return end
             new_card.def = utils.trim(new_def)
-            utils.edit_card(M.cards[M.current_card].term, new_card.term, new_card.def, M.subject)
+            utils.edit_card(M.subject.cards[M.current_card].file, new_card.term, new_card.def)
             M.reopen()
         end)
     end
 end
 
 M.delete = function ()
-    if M.num_cards <= 0 then return end
-    utils.delete_card(M.subject.cards[M.current_card].term, M.subject)
+    if M.subject.num_cards <= 0 then return end
+    utils.delete_card(M.subject.cards[M.current_card].file)
     M.reopen()
+end
+
+M.know = function ()
+    local card = M.subject.cards[M.current_card]
+    card.known = not card.known
+    utils.edit_card(card.file, card.term, card.def, card.known)
+    M.subject.cards[M.current_card] = card
+    update_view()
 end
 
 M.browse_subjects = function ()

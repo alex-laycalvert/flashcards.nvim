@@ -20,12 +20,12 @@ local defaults = {
             d = 'delete()',
             g = 'browse_cards()',
             o = 'browse_subjects()',
+            k = 'know()',
             ['<CR>'] = 'flip()',
             [' '] = 'flip()',
         }
     },
     subjects = {
-        spacing = 2,
         mappings = {
             j = 'next()',
             k = 'prev()',
@@ -33,6 +33,7 @@ local defaults = {
             e = 'edit()',
             a = 'add()',
             d = 'delete()',
+            r = 'reset()',
             ['<CR>'] = 'select()',
         },
     }

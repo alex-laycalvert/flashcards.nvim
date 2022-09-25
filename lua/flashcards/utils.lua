@@ -5,27 +5,23 @@ local api = vim.api
 
 local M = {}
 
+math.randomseed(os.time())
+
 -- https://github.com/james2doyle/lit-slugify
 M.slugify = function (string, replacement)
-  if replacement == nil then
-    replacement = '-'
-  end
-  local result = ''
-  for word in string.gmatch(string, "(%w+)") do
-    result = result .. word .. replacement
-  end
-  result = string.gsub(result, replacement .. "$", '')
-  return result:lower()
+    if replacement == nil then
+      replacement = '-'
+    end
+    local result = ''
+    for word in string.gmatch(string, "(%w+)") do
+      result = result .. word .. replacement
+    end
+    result = string.gsub(result, replacement .. "$", '')
+    return result:lower()
 end
 
 M.trim = function (s)
     return s:gsub('^%s*(.-)%s*$', '%1')
-end
-
-M.length = function (tbl)
-    local count = 0
-    for _ in pairs(tbl) do count = count + 1 end
-    return count
 end
 
 M.map = function (tbl, f)
@@ -36,22 +32,10 @@ M.map = function (tbl, f)
     return t
 end
 
-M.filter = function (tbl, f)
-    local t = {}
-    for k, v in pairs(tbl) do
-        if f(v) then t[k] = v end
-    end
-    return t
-end
-
 M.file_exists = function (file)
     local f = io.open(file, 'r')
     if f then f:close() end
     return f ~= nil
-end
-
-M.delete_file = function (file)
-    return os.execute('rm ' .. file)
 end
 
 M.create_dir = function (dir)
@@ -92,20 +76,6 @@ M.pad = function (str, len)
     return str .. string.rep(' ', len - string.len(str))
 end
 
-M.space_lines = function (lines, num_lines, spacing)
-    local t = {}
-    local current_index = 1
-    for i = 1, num_lines * spacing + spacing do
-        if i % spacing == 0 and current_index <= num_lines then
-            t[i] = lines[current_index]
-            current_index = current_index + 1
-        else
-            t[i] = ''
-        end
-    end
-    return t
-end
-
 M.set_mappings = function (buf, module, mappings)
     local all_chars = {
         'a', 'b', 'c', 'd',
@@ -132,72 +102,6 @@ M.set_mappings = function (buf, module, mappings)
     end
 end
 
-M.write_subjects = function (subjects)
-    local subjects_file = io.open(config.opts.dir .. '/SUBJECTS.json', 'w')
-    local subjects_to_write = {}
-    for _, v in pairs(subjects) do
-        subjects_to_write[v.name] = v.dir
-    end
-    io.output(subjects_file)
-    io.write(json.encode(subjects_to_write))
-    subjects_file:close()
-end
-
-M.write_cards = function (cards, filename)
-    local file = io.open(filename, 'w')
-    io.output(file)
-    io.write(json.encode(cards))
-    file:close()
-end
-
-M.edit_subject = function (subject_name, new_name)
-    local subjects = M.get_subjects()
-    for name, file in pairs(subjects) do
-        if name == subject_name then
-            subjects[name] = nil
-            subjects[M.trim(new_name)] = file
-            break
-        end
-    end
-    M.write_subjects(subjects)
-end
-
-M.delete_subject = function (subject_name)
-    local subjects = M.get_subjects()
-    local file = subjects[subject_name]
-    subjects[subject_name] = nil
-    M.write_subjects(subjects)
-    os.execute('rm ' .. file)
-end
-
-M.create_card = function (term, def, subject)
-    local subjects = M.get_subjects()
-    local filename = subjects[subject]
-    if not M.file_exists(filename) then return end
-    local cards = M.get_cards(filename)
-    cards[term] = def
-    M.write_cards(cards, filename)
-end
-
-M.edit_card = function (term, new_term, new_def, subject)
-    local subjects = M.get_subjects()
-    local filename = subjects[subject]
-    if not M.file_exists(filename) then return end
-    local cards = M.get_cards(filename)
-    cards[term] = nil
-    cards[new_term] = new_def
-    M.write_cards(cards, filename)
-end
-
-M.delete_card = function (term, subject)
-    local subjects = M.get_subjects()
-    local filename = subjects[subject]
-    if not M.file_exists(filename) then return end
-    local cards = M.get_cards(filename)
-    cards[term] = nil
-    M.write_cards(cards, filename)
-end
-
 M.read_json = function (filename)
     local file = io.open(filename, 'r')
     if file == nil then
@@ -213,6 +117,22 @@ M.read_json = function (filename)
     end
     file:close()
     return json.decode(file_json)
+end
+
+M.write_json = function (tbl, filename)
+    local file = io.open(filename, 'w')
+    if file == nil then
+        local code = os.execute('touch ' .. filename)
+        file = io.open(filename)
+    end
+    io.output(file)
+    io.write(json.encode(tbl))
+    file:close()
+end
+
+M.get_subject_names = function ()
+    local filename = config.opts.dir .. '/SUBJECTS.json'
+    return M.read_json(filename)
 end
 
 M.get_subjects = function ()
@@ -239,6 +159,7 @@ M.get_subject = function (subject_info)
     local known_count = 0
     for _, card_file in pairs(card_files) do
         local card = M.read_json(card_file)
+        card.file = card_file
         table.insert(subject.cards, card)
         card_count = card_count + 1
         if card.known then
@@ -267,5 +188,49 @@ M.add_subject = function (subject_name)
     end
 end
 
+M.edit_subject = function (subject, new_name)
+    local new_dir = config.opts.dir .. '/' .. M.slugify(new_name)
+    local subject_names = M.get_subject_names()
+    subject_names[subject.name] = nil
+    subject_names[new_name] = new_dir
+    local code = os.execute('mv ' .. subject.dir .. ' ' .. new_dir)
+    M.write_json(subject_names, config.opts.dir .. '/SUBJECTS.json')
+end
+
+M.delete_subject = function (subject)
+    local subject_names = M.get_subject_names()
+    subject_names[subject.name] = nil
+    M.write_json(subject_names, config.opts.dir .. '/SUBJECTS.json')
+end
+
+M.reset_subject_progress = function (subject)
+    for _, card in pairs(subject.cards) do
+        M.edit_card(card.file, card.term, card.def, false)
+    end
+end
+
+M.add_card = function (term, def, subject)
+    local template = 'TERM_DEF_xxxx'
+    local filename = string.gsub(template, 'TERM', M.slugify(term))
+    filename = string.gsub(filename, 'DEF', M.slugify(def))
+    filename = string.gsub(filename, 'x', function () return math.random(0, 0xf) end)
+    M.write_json({
+        term = term,
+        def = def,
+        known = false
+    }, subject.dir .. '/' .. filename)
+end
+
+M.edit_card = function (card_file, new_term, new_def, known)
+    M.write_json({
+        term = new_term,
+        def = new_def,
+        known = known
+    }, card_file)
+end
+
+M.delete_card = function(card_file)
+    local code = os.execute('rm ' .. card_file)
+end
 
 return M
